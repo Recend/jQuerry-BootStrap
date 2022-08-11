@@ -1,8 +1,6 @@
-let newTaskCount = 0
 $(document).ready(function () {
     //kvieciam funkcija
     getTasks();
-
     let newTaskCount = 0;
 
     // $("#add_task").click(function () {
@@ -19,32 +17,49 @@ $(document).ready(function () {
     //     newTaskCount++;
     // });
 
-    
-
-    $("#task_form").submit(function(event) {
+    // inputo reiksme ir jo isvalymas
+    $("#task_form").submit(function (event) {
         event.preventDefault();
         let taskInput = $("#task_name");
         let taskName = taskInput.val();
+        //sukuriame task obejkta
+        let task = {
+            "name": taskName,
+            "status": 'inprogress'
+        };
         taskInput.val("");
-        addTask(taskName);
+
+        //pridedam i duombaze
+        saveTask(task);
+      
+
+
     });
 
-    function addTask(taskName) {
-    
+
+    // pridejimas list item su norimu input
+    function addTask(task) {
         let taskList = $("#listas");
-
         let dynamicTaskID = `checkbox_${newTaskCount}`;
+        taskList.prepend(`<li class="list-group-item d-flex justify-content-between">
+    <div>
+    <input class="form-check-input me-1" type="checkbox" value="" id="${dynamicTaskID}" >
+    <label class="form-check-label" for="${dynamicTaskID}">${task.name}(#${task.id})</label>
+    </div>
+    <div>
+    <button data-task='${task.id}' type="button" class="trinti btn-close" aria-label="Close"</button>
+    </div>
+    </li>`)
+        newTaskCount++;
 
-        taskList.prepend(`
-        <li class="list-group-item">
-            <input class="form-check-input me-1" type="checkbox" value="" id="${dynamicTaskID}">
-            <label class="form-check-label" for="${dynamicTaskID}">${taskName}</label>  
-        </li>`);
-        newTaskCount++; 
     }
 
+
+    // x mygtykas istrina eilute
     $('#listas').on('click', '.trinti', function () {
         $(this).parent().parent().remove();
+        let taskID = $(this).data('task')
+        deleteTask(taskID)
     });
 
 
@@ -52,12 +67,33 @@ $(document).ready(function () {
         let apiURL = 'http://localhost:3000/tasks'
         $.get(apiURL, function (data) {
             for (let i = 0; i < data.length; i++) {
-                addTask(data[i].name)
+                addTask(data[i])
             }
         })
     }
 
-    function saveTask(){
-        
+    function saveTask(task) {
+        let apiURL = 'http://localhost:3000/tasks'
+        let data = task
+        $.post(apiURL, data, function (data) {
+            console.log('post uzklausos rezultatus')
+            console.log(data);
+            addTask(data)
+        })
     }
+
+    function deleteTask(taskID) {
+        let apiURL = 'http://localhost:3000/tasks/' + taskID
+        $.ajax({
+            url: apiURL,
+            method: "DELETE",
+            data: {},
+            success: (function () {
+
+            })
+        })
+    }
+
+
+
 })
