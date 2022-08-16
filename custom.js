@@ -31,7 +31,7 @@ $(document).ready(function () {
 
         //pridedam i duombaze
         saveTask(task);
-      
+
 
 
     });
@@ -41,10 +41,14 @@ $(document).ready(function () {
     function addTask(task) {
         let taskList = $("#listas");
         let dynamicTaskID = `checkbox_${newTaskCount}`;
-        taskList.prepend(`<li class="list-group-item d-flex justify-content-between">
+        let taskInputAttributes = '';
+        if (task.status === 'done') {
+            taskInputAttributes = 'checked'
+        }
+        taskList.prepend(`<li data-task='${task.id}'class="list-group-item d-flex justify-content-between">
     <div>
-    <input class="form-check-input me-1" type="checkbox" value="" id="${dynamicTaskID}" >
-    <label class="form-check-label" for="${dynamicTaskID}">${task.name}(#${task.id})</label>
+    <input class= "form-check-input me-1 task-checkbox " ${taskInputAttributes} type="checkbox" value="" id="${dynamicTaskID}" >
+    <label class="checkBox form-check-label " for="${dynamicTaskID}">${task.name}(#${task.id})</label>
     </div>
     <div>
     <button data-task='${task.id}' type="button" class="trinti btn-close" aria-label="Close"</button>
@@ -54,6 +58,33 @@ $(document).ready(function () {
 
     }
 
+
+    $('#listas').on('change', '.task-checkbox', function () {
+        let status = this.checked
+        let taskID = $(this).parent().parent().data('task')
+        console.log(taskID)
+        taskStatusUpdate(taskID, status)
+    })
+
+    function taskStatusUpdate(taskID, status) {
+        let apiURL = 'http://localhost:3000/tasks/' + taskID;
+        let taskStatusValue;
+        if (status === true) {
+            taskStatusValue = 'done'
+        } else if (status === false) {
+            taskStatusValue = 'inprogress'
+        }
+        $.ajax({
+            url: apiURL,
+            method: "PATCH",
+            data: {
+                status: taskStatusValue
+            },
+            success: (function () {
+
+            })
+        });
+    }
 
     // x mygtykas istrina eilute
     $('#listas').on('click', '.trinti', function () {
@@ -79,6 +110,7 @@ $(document).ready(function () {
             console.log('post uzklausos rezultatus')
             console.log(data);
             addTask(data)
+            
         })
     }
 
@@ -88,12 +120,18 @@ $(document).ready(function () {
             url: apiURL,
             method: "DELETE",
             data: {},
+            error: function () {
+                $.growl.error({
+                    message: "The kitten is attacking!"
+                });
+            },
             success: (function () {
-
+                $.growl({
+                    title: "Deleted",
+                    message: "Task was deleted!"
+                });
             })
-        })
+        });
     }
-
-
 
 })

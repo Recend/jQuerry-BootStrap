@@ -1,14 +1,9 @@
 {
   "tasks": [
     {
-      "name": "qwe",
+      "name": "asd",
       "status": "inprogress",
       "id": 1
-    },
-    {
-      "name": "qqq",
-      "status": "inprogress",
-      "id": 2
     }
   ]
 }
